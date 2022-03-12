@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <PackageVersion>2.5.3.0</PackageVersion>
+        <Authors>Vinoggradic1</Authors>
+        <Company>Aenide studios</Company>
+        <AssemblyVersion>2.5.3.0</AssemblyVersion>
+        <FileVersion>$(AssemblyVersion)</FileVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\VRM3DE.Base\VRM3DE.Base.csproj" />
+      <ProjectReference Include="..\VRM3DE.Input\VRM3DE.Input.csproj" />
+      <ProjectReference Include="..\VRM3DE.Render\VRM3DE.Render.csproj" />
+      <ProjectReference Include="..\VRM3DE.Scene\VRM3DE.Scene.csproj" />
+      <ProjectReference Include="..\VRM3DE.Support\VRM3DE.Support.csproj" />
+      <ProjectReference Include="..\VRM3DE.Transform\VRM3DE.Transform.csproj" />
+      <ProjectReference Include="..\VRM3DE.Window\VRM3DE.Window.csproj" />
+    </ItemGroup>
+
+</Project>

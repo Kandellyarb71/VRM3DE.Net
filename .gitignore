@@ -1,0 +1,5 @@
+**/bin
+**/obj
+/.idea
+/.vs
+/VRM3DE.Tests

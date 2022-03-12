@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <PackageVersion>2.5.3.0</PackageVersion>
+        <Authors>Vinoggradic1</Authors>
+        <Company>Aenide studios</Company>
+        <AssemblyVersion>2.5.3.0</AssemblyVersion>
+        <FileVersion>$(AssemblyVersion)</FileVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\VRM3DE.Base\VRM3DE.Base.csproj" />
+    </ItemGroup>
+
+</Project>
