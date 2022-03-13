@@ -125,19 +125,15 @@ vec3 renderRay(vec3 origin, vec3 direction, vec3 end, float lengths, hit hit)
 
 void main()
 {
-	vec2[] offset = vec2[](vec2(0.125, 0.375), vec2(0.375, -0.125), vec2(-0.125, -0.375), vec2(-0.375, 0.125));
 	vec3 color;
-	for (int i = 0; i < offset.length; i++)
-	{
-		vec3 origin;
-		vec3 direction;
-		vec3 end;
-		float lengths;
-		hit hit;
-		createRay(offset[i], origin, direction);
-		traceRay(origin, direction, end, lengths, hit);
-		color += renderRay(origin, direction, end, lengths, hit);
-	}
-	color = pow(color / offset.length, vec3(0.5556));
+	vec3 origin;
+	vec3 direction;
+	vec3 end;
+	float lengths;
+	hit hit;
+	createRay(offset[i], origin, direction);
+	traceRay(origin, direction, end, lengths, hit);
+	color += renderRay(origin, direction, end, lengths, hit);
+	color = pow(color, vec3(0.5556));
 	gl_FragColor = vec4(color, 1.0);
 }
