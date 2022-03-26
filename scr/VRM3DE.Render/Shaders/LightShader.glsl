@@ -61,9 +61,9 @@ hit closestMapHit(vec3 point)
 }
 
 
-void createRay(vec2 offset, inout vec3 origin, inout vec3 direction)
+void createRay(inout vec3 origin, inout vec3 direction)
 {
-	vec2 UV = vec2(2.0 * (gl_FragCoord.xy + offset) - CameraResolution.xy) / CameraResolution.y;
+	vec2 UV = vec2(2.0 * (gl_FragCoord.xy) - CameraResolution.xy) / CameraResolution.y;
 	origin = CameraPosition.zyx;
 	direction = normalize(vec3(UV, FOV));
 	direction.zy *= rotation(-CameraRotation.y);
@@ -131,9 +131,10 @@ void main()
 	vec3 end;
 	float lengths;
 	hit hit;
-	createRay(offset[i], origin, direction);
+	createRay(origin, direction);
+	end = origin;
 	traceRay(origin, direction, end, lengths, hit);
 	color += renderRay(origin, direction, end, lengths, hit);
-	color = pow(color, vec3(0.5556));
+	color = pow(color, vec3(0.4545));
 	gl_FragColor = vec4(color, 1.0);
 }

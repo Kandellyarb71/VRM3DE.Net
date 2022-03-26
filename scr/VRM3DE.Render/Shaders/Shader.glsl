@@ -75,7 +75,7 @@ ray createRay(vec2 offset)
 {
 	vec2 UV = vec2(2.0 * (gl_FragCoord.xy + offset) - CameraResolution.xy) / CameraResolution.y;
 	hit hit = hit(vec3(0.0), 0.0, object(0.0, vec3(0.0)));
-	ray ray = ray(CameraPosition.zyx, normalize(vec3(UV, FOV)), vec3(0.0), 0.0, hit);
+	ray ray = ray(CameraPosition.zyx, normalize(vec3(UV, FOV)), CameraPosition.zyx, 0.0, hit);
 	ray.direction.zy *= rotation(-CameraRotation.y);
 	ray.direction.zx *= rotation(CameraRotation.x);
 	return ray;
