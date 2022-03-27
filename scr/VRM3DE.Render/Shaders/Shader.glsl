@@ -13,6 +13,7 @@ struct object
 {
 	float ID;
 	vec3 color;
+	float specularity;
 };
 
 struct hit
@@ -62,9 +63,9 @@ hit unite(hit first, hit second)
 
 hit closestMapHit(vec3 point)
 {
-	object plane = object(0.0, vec3(0.2 + 0.4 * mod(floor(point.x) - floor(point.z), 2.0)));
+	object plane = object(0.0, vec3(0.2 + 0.4 * mod(floor(point.x) - floor(point.z), 2.0)), 1.0);
 	hit planeHit = hit(point, planeDist(point, vec3(0.0, 1.0, 0.0), 1.0), plane);
-	object sphere = object(1.0, vec3(0.9, 0.0, 0.0));
+	object sphere = object(1.0, vec3(0.9, 0.0, 0.0), 1.0);
 	hit sphereHit = hit(point, sphereDist(point, 1.0), sphere);
 	hit result = unite(planeHit, sphereHit);
 	return result;
@@ -74,7 +75,7 @@ hit closestMapHit(vec3 point)
 ray createRay(vec2 offset)
 {
 	vec2 UV = vec2(2.0 * (gl_FragCoord.xy + offset) - CameraResolution.xy) / CameraResolution.y;
-	hit hit = hit(vec3(0.0), 0.0, object(0.0, vec3(0.0)));
+	hit hit = hit(vec3(0.0), 0.0, object(0.0, vec3(0.0), 0.0));
 	ray ray = ray(CameraPosition.zyx, normalize(vec3(UV, FOV)), CameraPosition.zyx, 0.0, hit);
 	ray.direction.zy *= rotation(-CameraRotation.y);
 	ray.direction.zx *= rotation(CameraRotation.x);
@@ -97,27 +98,31 @@ ray traceRay(ray orig)
 	return ray;
 }
 
-vec3 shade(ray ray)
+vec3 shade(ray ray, float specularity)
 {
     vec3 lightPosition = vec3(20.0, 40.0, -30.0);
-	float S = 0.05;
+    float S = 0.05;
     vec3 L = normalize(lightPosition - ray.end);
-	vec2 E = vec2(Epsilon, -0.0);
+	vec2 E = vec2(Epsilon, 0.0);
 	vec3 N = normalize(vec3(closestMapHit(ray.end).dist) - vec3(closestMapHit(ray.end - E.xyy).dist, closestMapHit(ray.end - E.yxy).dist, closestMapHit(ray.end - E.yyx).dist));
-	vec3 diffuse = vec3(1.0) * clamp(dot(L, N), S, 1.0);
-	hit hit = hit(vec3(0.0), 0.0, object(0.0, vec3(0.0)));
+	vec3 V = -ray.direction;
+	vec3 R = reflect(-L, N);
+	vec3 diffuse = vec3(clamp(dot(L, N), 0.0, 1.0));
+	vec3 specular = vec3(pow(clamp(dot(R, V), 0.0, specularity), 32.0));
+    vec3 ambient = vec3(S);
+	hit hit = hit(vec3(0.0), 0.0, struct object(0.0, vec3(0.0), 0.0));
 	struct ray lightRay = struct ray(ray.end + N * 0.02, normalize(lightPosition), vec3(0.0), 0.0, hit);
 	lightRay = traceRay(lightRay);
 	if (lightRay.lengths < length(lightPosition - ray.end))
 	{
-		return vec3(S);
+		return ambient;
 	}
-	return diffuse;
+	return diffuse + ambient + specular;
 }
 
 vec3 renderRay(ray ray)
 {
-	vec3 color;
+	vec3 color = vec3(0.0);
 	vec3 sky = vec3(0.5, 0.8, 0.9);
 	if (ray.lengths >= MaxDist)
 	{
@@ -125,8 +130,8 @@ vec3 renderRay(ray ray)
 	}
 	else
 	{
-		color += ray.hit.object.color;
-		color *= shade(ray);
+	    color += ray.hit.object.color;
+		color *= shade(ray, ray.hit.object.specularity);
 		color = mix(color, sky, 1.0 - exp(-0.00005 * ray.lengths * ray.lengths));
 	}
 	return color;
@@ -143,6 +148,6 @@ void main()
 		ray = traceRay(ray);
 		color += renderRay(ray);
 	}
-	color = pow(color / offset.length, vec3(0.5556));
+	color = pow(color / offset.length, vec3(0.4545));
 	gl_FragColor = vec4(color, 1.0);
 }
