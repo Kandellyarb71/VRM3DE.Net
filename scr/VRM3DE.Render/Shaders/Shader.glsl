@@ -108,7 +108,7 @@ vec3 shade(ray ray, float specularity)
 	vec3 V = -ray.direction;
 	vec3 R = reflect(-L, N);
 	vec3 diffuse = vec3(clamp(dot(L, N), 0.0, 1.0));
-	vec3 specular = vec3(pow(clamp(dot(R, V), 0.0, specularity), 32.0));
+	vec3 specular = vec3(0.5) * pow(clamp(dot(R, V), 0.0, specularity), 32.0);
     vec3 ambient = vec3(S);
 	hit hit = hit(vec3(0.0), 0.0, struct object(0.0, vec3(0.0), 0.0));
 	struct ray lightRay = struct ray(ray.end + N * 0.02, normalize(lightPosition), vec3(0.0), 0.0, hit);
