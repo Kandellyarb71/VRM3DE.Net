@@ -41,6 +41,11 @@ mat2 rotation(float a)
 }
 
 
+float vmax(vec3 v)
+{
+	return max(max(v.x, v.y), v.z);
+}
+
 float sphereDist(vec3 point, float radius)
 {
 	return length(point) - radius;
@@ -49,6 +54,12 @@ float sphereDist(vec3 point, float radius)
 float planeDist(vec3 point, vec3 normal, float distanceFromOrigin)
 {
 	return dot(point, normal) + distanceFromOrigin;
+}
+
+float boxDist(vec3 point, vec3 size)
+{
+	vec3 d = abs(point) - size;
+	return length(max(d, vec3(0))) + max(max((min(d, vec3(0))).x, (min(d, vec3(0))).y), (min(d, vec3(0))).z);
 }
 
 float torusDist(vec3 point, float smallRadius, float largeRadius)
@@ -67,6 +78,8 @@ hit closestMapHit(vec3 point)
 	hit planeHit = hit(point, planeDist(point, vec3(0.0, 1.0, 0.0), 1.0), plane);
 	object sphere = object(1.0, vec3(0.9, 0.0, 0.0), 1.0);
 	hit sphereHit = hit(point, sphereDist(point, 1.0), sphere);
+	object box = object(2.0, vec3(0.1, 0.8, 0.3), 1.0);
+	hit boxHit = hit(point, boxDist(point, vec3(1.0)), box);
 	hit result = unite(planeHit, sphereHit);
 	return result;
 }
@@ -98,26 +111,25 @@ ray traceRay(ray orig)
 	return ray;
 }
 
-vec3 shade(ray ray, float specularity)
+vec3 shade(ray ray, object object)
 {
     vec3 lightPosition = vec3(20.0, 40.0, -30.0);
-    float S = 0.05;
     vec3 L = normalize(lightPosition - ray.end);
 	vec2 E = vec2(Epsilon, 0.0);
-	vec3 N = normalize(vec3(closestMapHit(ray.end).dist) - vec3(closestMapHit(ray.end - E.xyy).dist, closestMapHit(ray.end - E.yxy).dist, closestMapHit(ray.end - E.yyx).dist));
+	vec3 N = normalize(vec3(  closestMapHit(ray.end).dist) - vec3(closestMapHit(ray.end - E.xyy).dist, closestMapHit(ray.end - E.yxy).dist, closestMapHit(ray.end - E.yyx).dist  ));
 	vec3 V = -ray.direction;
 	vec3 R = reflect(-L, N);
-	vec3 diffuse = vec3(clamp(dot(L, N), 0.0, 1.0));
-	vec3 specular = vec3(0.5) * pow(clamp(dot(R, V), 0.0, specularity), 32.0);
-    vec3 ambient = vec3(S);
+	vec3 diffuse = object.color * clamp(dot(L, N), 0.0, 1.0);
+	vec3 specular = vec3(0.5) * pow(clamp(dot(R, V), 0.0, object.specularity), 32.0);
+    vec3 ambient = object.color * 0.05;
 	hit hit = hit(vec3(0.0), 0.0, struct object(0.0, vec3(0.0), 0.0));
-	struct ray lightRay = struct ray(ray.end + N * 0.02, normalize(lightPosition), vec3(0.0), 0.0, hit);
+	struct ray lightRay = struct ray(ray.end + N * 0.002, normalize(lightPosition), vec3(0.0), 0.0, hit);
 	lightRay = traceRay(lightRay);
 	if (lightRay.lengths < length(lightPosition - ray.end))
 	{
 		return ambient;
 	}
-	return diffuse + ambient + specular;
+	return ambient + diffuse + specular;
 }
 
 vec3 renderRay(ray ray)
@@ -130,8 +142,7 @@ vec3 renderRay(ray ray)
 	}
 	else
 	{
-	    color += ray.hit.object.color;
-		color *= shade(ray, ray.hit.object.specularity);
+		color = shade(ray, ray.hit.object);
 		color = mix(color, sky, 1.0 - exp(-0.00005 * ray.lengths * ray.lengths));
 	}
 	return color;
